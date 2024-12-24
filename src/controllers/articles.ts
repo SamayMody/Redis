@@ -23,7 +23,8 @@ export const createArticle = async (req, res) => {
             articleContent
         },
     })
-    res.status(200).send('Article created successfully');
+    await redisClient.del("articles");
+    res.status(200).send('Article added to DB');
 }
 
 export const getArticles = async (req, res): Promise<void> => {
