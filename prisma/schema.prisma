@@ -14,6 +14,6 @@ model redis_prac {
   id Int  @id @default(autoincrement())
   username String
   articleTitle String
-  articleContent String
+  articleContent String @db.Text
   createdAt DateTime @default(now())
 }

@@ -8,10 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getArticles = exports.createArticle = void 0;
 const client_1 = require("@prisma/client");
+const redis_1 = __importDefault(require("redis"));
 const prisma = new client_1.PrismaClient();
+const redisClient = redis_1.default.createClient();
 const createArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const username = req.body.username;
     const articleTitle = req.body.articleTitle;
@@ -26,13 +31,16 @@ const createArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     res.status(200).send('Article created successfully');
 });
 exports.createArticle = createArticle;
-const getArticles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const article = yield prisma.redis_prac.findMany();
-    try {
-        res.status(200).send(article);
+const getArticles = (res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = redisClient.get("articles");
+    if (data) {
+        console.log("Data from cache");
+        res.status(200).send(data);
     }
-    catch (error) {
-        res.status(404).send('No articles found');
+    else {
+        const articles = prisma.redis_prac.findMany();
+        redisClient.set("articles", JSON.stringify(articles));
+        res.status(200).send("Data from db");
     }
 });
 exports.getArticles = getArticles;
